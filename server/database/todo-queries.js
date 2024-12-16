@@ -1,32 +1,32 @@
 const knex = require("./connection.js");
 
 async function all() {
-    return knex('todos');
+    return knex('todos').where({user_id: userId});
 }
 
-async function get(id) {
-    const results = await knex('todos').where({ id });
+async function get(id,userId) {
+    const results = await knex('todos').where({ id, user_id: userId});
     return results[0];
 }
 
-async function create(title, order) {
-    const results = await knex('todos').insert({ title, order }).returning('*');
+async function create(title, order,userId) {
+    const results = await knex('todos').insert({ title, order, user_id: userId}).returning('*');
     return results[0];
 }
 
-async function update(id, properties) {
-    const results = await knex('todos').where({ id }).update({ ...properties }).returning('*');
+async function update(id, properties, userId) {
+    const results = await knex('todos').where({ id, user_id: userId }).update({ ...properties }).returning('*');
     return results[0];
 }
 
 // delete is a reserved keyword
-async function del(id) {
-    const results = await knex('todos').where({ id }).del().returning('*');
+async function del(id, userId) {
+    const results = await knex('todos').where({ id, user_id: userId }).del().returning('*');
     return results[0];
 }
 
-async function clear() {
-    return knex('todos').del().returning('*');
+async function clear(userId) {
+    return knex('todos').where({user_id: userId}).del().returning('*');
 }
 
 module.exports = {

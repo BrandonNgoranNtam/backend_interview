@@ -2,6 +2,8 @@ const _ = require('lodash');
 const todos = require('./database/todo-queries.js');
 const users = require('./database/user-queries.js');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+
 
 
 function createToDo(req, data) {
@@ -42,38 +44,45 @@ async function loginUser(req,res){
     res.status(401).send('Invalid credentials')
   }else{
     // IMPLEMENT JWT TOKEN FOR SESSIONS
-    res.status(200).send({message: "Login successful", user})
+    const token = jwt.sign({userId: user.id}, process.env.JWT_SECRET_KEY)
+    res.status(200).send({message: "Login successful", user, token})
   }
 
 }
 
 async function getAllTodos(req, res) {
-  const allEntries = await todos.all();
+  const userId = req.user.id;
+  const allEntries = await todos.all(userId);
   return res.send(allEntries.map( _.curry(createToDo)(req) ));
 }
 
 async function getTodo(req, res) {
-  const todo = await todos.get(req.params.id);
+  const userId = req.user.id;
+  const todo = await todos.get(req.params.id,userId);
   return res.send(todo);
 }
 
 async function postTodo(req, res) {
-  const created = await todos.create(req.body.title, req.body.order);
+  const userId = req.user.id;
+  const created = await todos.create(req.body.title, req.body.order, userId);
   return res.send(createToDo(req, created));
 }
 
 async function patchTodo(req, res) {
-  const patched = await todos.update(req.params.id, req.body);
+  const userId = req.user.id;
+  const patched = await todos.update(req.params.id, req.body, userId);
   return res.send(createToDo(req, patched));
 }
 
 async function deleteAllTodos(req, res) {
-  const deletedEntries = await todos.clear();
+  const userId = req.user.id;
+  const deletedEntries = await todos.clear(userId);
   return res.send(deletedEntries.map( _.curry(createToDo)(req) ));
 }
 
 async function deleteTodo(req, res) {
-  const deleted = await todos.delete(req.params.id);
+  const userId = req.user.id;
+  const deleted = await todos.delete(req.params.id, userId);
   return res.send(createToDo(req, deleted));
 }
 
