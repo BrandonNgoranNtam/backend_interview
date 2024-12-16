@@ -20,14 +20,32 @@ function createToDo(req, data) {
 async function registerUser(req, res) {
   const { username, password } = req.body;
   
-    const user = await users.getUser(username);
-    if(user){
-      res.status(400).send('Username already used')
-    }
-    const hashedPassword = await bcrypt.hash(password,10);
-    const createdUser = await users.createUser(username, hashedPassword);
-    res.status(201).send({message: "User successfully registered", createdUser})
+  const user = await users.getUser(username);
+  if(user){
+    res.status(400).send('Username already used')
   }
+  const hashedPassword = await bcrypt.hash(password,10);
+  const createdUser = await users.createUser(username, hashedPassword);
+  res.status(201).send({message: "User successfully registered", createdUser})
+}
+
+
+async function loginUser(req,res){
+  const {username, password} = req.body;
+  const user = await users.getUser(username);
+  if(!user){
+    res.status(401).send('Invalid credentials')
+  }
+  const validPassword = await bcrypt.compare(password,user.password);
+  console.log("ValidPassword",validPassword)
+  if(!validPassword){
+    res.status(401).send('Invalid credentials')
+  }else{
+    // IMPLEMENT JWT TOKEN FOR SESSIONS
+    res.status(200).send({message: "Login successful", user})
+  }
+
+}
 
 async function getAllTodos(req, res) {
   const allEntries = await todos.all();
@@ -79,7 +97,8 @@ const toExport = {
     patchTodo: { method: patchTodo, errorMessage: "Could not patch todo" },
     deleteAllTodos: { method: deleteAllTodos, errorMessage: "Could not delete all todos" },
     deleteTodo: { method: deleteTodo, errorMessage: "Could not delete todo" },
-    registerUser: { method: registerUser, errorMessage: "Could not register the user"}
+    registerUser: { method: registerUser, errorMessage: "Could not register the user"},
+    loginUser: {method: loginUser, errorMessage: "Could not log user in"}
 }
 
 for (let route in toExport) {

@@ -13,6 +13,7 @@ app.delete('/', routes.deleteAllTodos);
 app.delete('/:id', routes.deleteTodo);
 
 app.post('/users/register', routes.registerUser);
+app.post('/users/login',routes.loginUser)
 
 
 if (process.env.NODE_ENV !== 'test') {
