@@ -12,7 +12,7 @@ app.patch('/:id', routes.patchTodo);
 app.delete('/', routes.deleteAllTodos);
 app.delete('/:id', routes.deleteTodo);
 
-
+app.post('/users/register', routes.registerUser);
 
 
 if (process.env.NODE_ENV !== 'test') {

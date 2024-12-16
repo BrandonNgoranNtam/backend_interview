@@ -1,5 +1,8 @@
 const _ = require('lodash');
 const todos = require('./database/todo-queries.js');
+const users = require('./database/user-queries.js');
+const bcrypt = require('bcrypt');
+
 
 function createToDo(req, data) {
   const protocol = req.protocol, 
@@ -13,6 +16,18 @@ function createToDo(req, data) {
     url: `${protocol}://${host}/${id}`
   };
 }
+
+async function registerUser(req, res) {
+  const { username, password } = req.body;
+  
+    const user = await users.getUser(username);
+    if(user){
+      res.status(400).send('Username already used')
+    }
+    const hashedPassword = await bcrypt.hash(password,10);
+    const createdUser = await users.createUser(username, hashedPassword);
+    res.status(201).send({message: "User successfully registered", createdUser})
+  }
 
 async function getAllTodos(req, res) {
   const allEntries = await todos.all();
@@ -63,7 +78,8 @@ const toExport = {
     postTodo: { method: postTodo, errorMessage: "Could not post todo" },
     patchTodo: { method: patchTodo, errorMessage: "Could not patch todo" },
     deleteAllTodos: { method: deleteAllTodos, errorMessage: "Could not delete all todos" },
-    deleteTodo: { method: deleteTodo, errorMessage: "Could not delete todo" }
+    deleteTodo: { method: deleteTodo, errorMessage: "Could not delete todo" },
+    registerUser: { method: registerUser, errorMessage: "Could not register the user"}
 }
 
 for (let route in toExport) {
